@@ -199,9 +199,11 @@
         <h3 class="text-lg leading-6 font-medium text-gray-900 my-8">{{ sel.name }} - USD</h3>
         <div class="flex items-end border-gray-600 border-b border-l h-64">
           <div
-            v-for="(bar, index) in normalizeGraph()" :key="index"
+            v-for="(bar, index) in normalizeGraph()"
+            :key="index"
             :style="{ height: `${bar}%` }"
-            class="bg-purple-800 border w-10 h-24"></div>
+            class="bg-purple-800 border w-10 h-24"
+          ></div>
         </div>
         <button @click="sel = null" type="button" class="absolute top-0 right-0">
           <svg
@@ -244,14 +246,17 @@ export default {
     add() {
       console.log('asd')
       const ticker = {
-        name: this.ticker,
+        name: this.ticker
       }
       this.tickers.push(ticker)
-      setInterval(async() => {
-        const f = await fetch(`https://min-api.cryptocompare.com/data/price?fsym=${ticker.name}&tsyms=USD&api_key=95de0a9e89952bf61969931e3a379af7e418a0f3b50accb617ac4b21e9a342b9`)
+      setInterval(async () => {
+        const f = await fetch(
+          `https://min-api.cryptocompare.com/data/price?fsym=${ticker.name}&tsyms=USD&api_key=95de0a9e89952bf61969931e3a379af7e418a0f3b50accb617ac4b21e9a342b9`
+        )
         const data = await f.json()
         console.log(data)
-        this.tickers.find(t => t.name === ticker.name).price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2)
+        this.tickers.find((t) => t.name === ticker.name).price =
+          data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2)
         if (this.sel?.name === ticker.name) {
           this.graph.push(data.USD)
         }
