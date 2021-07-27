@@ -1,15 +1,23 @@
 <template>
   <div class="container mx-auto flex flex-col items-center bg-gray-100 p-4">
-    <!--    <div class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center">-->
-    <!--      <svg class="animate-spin -ml-1 mr-3 h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">-->
-    <!--        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>-->
-    <!--        <path-->
-    <!--          class="opacity-75"-->
-    <!--          fill="currentColor"-->
-    <!--          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"-->
-    <!--        ></path>-->
-    <!--      </svg>-->
-    <!--    </div>-->
+    <div
+      v-if="!coinList"
+      class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center"
+    >
+      <svg
+        class="animate-spin -ml-1 mr-3 h-12 w-12 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+    </div>
     <div class="container">
       <section>
         <div class="flex">
@@ -101,7 +109,7 @@
                 CHD
               </span>
             </div>
-            <!--            <div class="text-sm text-red-600">Такой тикер уже добавлен</div>-->
+            <div v-show="duplicate" class="text-sm text-red-600">Такой тикер уже добавлен</div>
           </div>
         </div>
         <button
@@ -239,12 +247,34 @@ export default {
       ticker: '',
       tickers: [],
       sel: null,
-      graph: []
+      graph: [],
+      duplicate: false,
+      coinList: null
     }
   },
+  mounted() {
+    this.fetcCoinList()
+  },
   methods: {
+    async fetcCoinList() {
+      const list = await fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
+      const data = await list.json()
+      console.log(Object.values(data.Data))
+      this.coinList = Object.values(data.Data)
+    },
+    duplicateTicker() {
+      const match = this.tickers.filter((item) => {
+        return item.name.toUpperCase() === this.ticker.toUpperCase()
+      })
+      match.length ? (this.duplicate = true) : (this.duplicate = false)
+      return match.length
+    },
     add() {
-      console.log('asd')
+      if (this.ticker.length < 1) return
+      if (this.duplicateTicker()) {
+        this.ticker = ''
+        return
+      }
       const ticker = {
         name: this.ticker
       }
@@ -278,5 +308,3 @@ export default {
   }
 }
 </script>
-
-<style src="./app.css"></style>
