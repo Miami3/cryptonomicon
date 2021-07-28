@@ -30,6 +30,7 @@
                 name="wallet"
                 id="wallet"
                 @keydown.enter="add"
+                @input="duplicate = false"
                 class="
                   block
                   w-full
@@ -43,8 +44,11 @@
                 placeholder="Например DOGE"
               />
             </div>
-            <div class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap">
+            <div v-if="quickSearch.length" class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap">
               <span
+                v-for="(ticker, index) in quickSearch"
+                :key="index"
+                @click="selectQuickSearch(ticker.Symbol)"
                 class="
                   inline-flex
                   items-center
@@ -58,55 +62,7 @@
                   cursor-pointer
                 "
               >
-                BTC
-              </span>
-              <span
-                class="
-                  inline-flex
-                  items-center
-                  px-2
-                  m-1
-                  rounded-md
-                  text-xs
-                  font-medium
-                  bg-gray-300
-                  text-gray-800
-                  cursor-pointer
-                "
-              >
-                DOGE
-              </span>
-              <span
-                class="
-                  inline-flex
-                  items-center
-                  px-2
-                  m-1
-                  rounded-md
-                  text-xs
-                  font-medium
-                  bg-gray-300
-                  text-gray-800
-                  cursor-pointer
-                "
-              >
-                BCH
-              </span>
-              <span
-                class="
-                  inline-flex
-                  items-center
-                  px-2
-                  m-1
-                  rounded-md
-                  text-xs
-                  font-medium
-                  bg-gray-300
-                  text-gray-800
-                  cursor-pointer
-                "
-              >
-                CHD
+                {{ ticker.Symbol }}
               </span>
             </div>
             <div v-show="duplicate" class="text-sm text-red-600">Такой тикер уже добавлен</div>
@@ -249,13 +205,28 @@ export default {
       sel: null,
       graph: [],
       duplicate: false,
-      coinList: null
+      coinList: []
     }
   },
   mounted() {
     this.fetcCoinList()
   },
+  computed: {
+    quickSearch() {
+      if (!this.ticker) return []
+      const search = this.ticker.toUpperCase().trim()
+      const matched = this.coinList.filter((item) => {
+        return item.Symbol.includes(search)
+      })
+      if (matched.length > 4) matched.length = 4
+      return matched
+    }
+  },
   methods: {
+    selectQuickSearch(name) {
+      this.ticker = name
+      this.add()
+    },
     async fetcCoinList() {
       const list = await fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
       const data = await list.json()
@@ -271,10 +242,7 @@ export default {
     },
     add() {
       if (this.ticker.length < 1) return
-      if (this.duplicateTicker()) {
-        this.ticker = ''
-        return
-      }
+      if (this.duplicateTicker()) return
       const ticker = {
         name: this.ticker
       }
